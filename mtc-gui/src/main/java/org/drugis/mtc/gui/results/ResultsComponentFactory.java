@@ -1,3 +1,22 @@
+/*
+ * This file is part of the GeMTC software for MTC model generation and
+ * analysis. GeMTC is distributed from http://drugis.org/gemtc.
+ * Copyright (C) 2009-2012 Gert van Valkenhoef.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.drugis.mtc.gui.results;
 
 import java.awt.event.ActionEvent;
@@ -37,6 +56,7 @@ import org.drugis.mtc.presentation.results.NetworkRelativeEffectTableModel;
 import org.drugis.mtc.presentation.results.NetworkVarianceTableModel;
 import org.drugis.mtc.presentation.results.RankProbabilityDataset;
 import org.drugis.mtc.presentation.results.RankProbabilityTableModel;
+import org.drugis.mtc.summary.QuantileSummary;
 import org.drugis.mtc.util.EmpiricalDensityDataset;
 import org.drugis.mtc.util.EmpiricalDensityDataset.PlotParameter;
 import org.drugis.mtc.util.MCMCResultsAvailableModel;
@@ -68,7 +88,7 @@ public class ResultsComponentFactory {
 
 	public static JTable buildVarianceTable(final MTCModelWrapper<?> wrapper) {
 		final JTable varTable = new EnhancedTable(new NetworkVarianceTableModel(wrapper), 150);
-		varTable.setDefaultRenderer(Object.class, new SummaryCellRenderer());
+		varTable.setDefaultRenderer(QuantileSummary.class, new SummaryCellRenderer());
 		return varTable;
 	}
 
@@ -82,7 +102,7 @@ public class ResultsComponentFactory {
 
 	public static EnhancedTable buildRankProbabilityTable(final ConsistencyWrapper<?> wrapper) {
 		final EnhancedTable rankTable = EnhancedTable.createBare(new RankProbabilityTableModel(wrapper.getRankProbabilities()));
-		rankTable.setDefaultRenderer(Object.class, new SummaryCellRenderer());
+		rankTable.setDefaultRenderer(Double.class, new SummaryCellRenderer());
 		rankTable.autoSizeColumns();
 		return rankTable;
 	}
