@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -32,11 +33,13 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.table.TableColumn;
 
 import org.drugis.common.gui.FileSaveDialog;
 import org.drugis.common.gui.LayoutUtil;
 import org.drugis.common.gui.ToStringValueModel;
 import org.drugis.common.gui.table.EnhancedTable;
+import org.drugis.common.gui.table.TableCopyHandler;
 import org.drugis.common.threading.status.TaskTerminatedModel;
 import org.drugis.common.validation.BooleanAndModel;
 import org.drugis.mtc.MCMCModel;
@@ -48,15 +51,18 @@ import org.drugis.mtc.gui.MainWindow;
 import org.drugis.mtc.model.Treatment;
 import org.drugis.mtc.parameterization.BasicParameter;
 import org.drugis.mtc.presentation.ConsistencyWrapper;
+import org.drugis.mtc.presentation.InconsistencyWrapper;
 import org.drugis.mtc.presentation.MTCModelWrapper;
 import org.drugis.mtc.presentation.NodeSplitWrapper;
 import org.drugis.mtc.presentation.SimulationConsistencyWrapper;
 import org.drugis.mtc.presentation.SimulationNodeSplitWrapper;
+import org.drugis.mtc.presentation.results.NetworkInconsistencyFactorsTableModel;
 import org.drugis.mtc.presentation.results.NetworkRelativeEffectTableModel;
 import org.drugis.mtc.presentation.results.NetworkVarianceTableModel;
 import org.drugis.mtc.presentation.results.RankProbabilityDataset;
 import org.drugis.mtc.presentation.results.RankProbabilityTableModel;
 import org.drugis.mtc.summary.QuantileSummary;
+import org.drugis.mtc.summary.Summary;
 import org.drugis.mtc.util.EmpiricalDensityDataset;
 import org.drugis.mtc.util.EmpiricalDensityDataset.PlotParameter;
 import org.drugis.mtc.util.MCMCResultsAvailableModel;
@@ -81,15 +87,36 @@ public class ResultsComponentFactory {
 	public static JTable buildRelativeEffectsTable(final List<Treatment> treatments,
 			final MTCModelWrapper<?> wrapper, final boolean isDichotomous,
 			final boolean showDescription) {
-		final JTable reTable = new EnhancedTable(new NetworkRelativeEffectTableModel(treatments, wrapper), 150);
+		final JTable reTable = createTableWithoutHeaders(new NetworkRelativeEffectTableModel(treatments, wrapper));
 		reTable.setDefaultRenderer(Object.class, new NetworkRelativeEffectTableCellRenderer(isDichotomous, showDescription));
+
 		return reTable;
+	}
+
+	private static JTable createTableWithoutHeaders(NetworkRelativeEffectTableModel dm) {
+		final JTable table = new JTable(dm);
+		table.setTableHeader(null);
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		for (final TableColumn c : Collections.list(table.getColumnModel().getColumns())) {
+			c.setMinWidth(170);
+			c.setPreferredWidth(170);
+		}
+
+		TableCopyHandler.registerCopyAction(table);
+		return table;
 	}
 
 	public static JTable buildVarianceTable(final MTCModelWrapper<?> wrapper) {
 		final JTable varTable = new EnhancedTable(new NetworkVarianceTableModel(wrapper), 150);
 		varTable.setDefaultRenderer(QuantileSummary.class, new SummaryCellRenderer());
 		return varTable;
+	}
+
+	public static JTable buildInconsistencyFactors(final InconsistencyWrapper<?> wrapper, final ValueModel modelConstructedModel) {
+		final NetworkInconsistencyFactorsTableModel inconsistencyFactorsTableModel = new NetworkInconsistencyFactorsTableModel(wrapper, modelConstructedModel);
+		final EnhancedTable table = new EnhancedTable(inconsistencyFactorsTableModel, 300);
+		table.setDefaultRenderer(Summary.class, new SummaryCellRenderer(false));
+		return table;
 	}
 
 	public static ChartPanel buildRankProbabilityChart(final ConsistencyWrapper<?> wrapper) {
